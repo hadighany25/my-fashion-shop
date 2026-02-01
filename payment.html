@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | Fashion Shop</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      .checkout-container {
+        max-width: 900px;
+        margin: 50px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      /* ផ្នែកខាងឆ្វេង (QR Code) */
+      .payment-section {
+        text-align: center;
+        border-right: 1px solid #eee;
+        padding-right: 40px;
+      }
+      .qr-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        display: inline-block;
+        border: 2px dashed var(--accent);
+      }
+      .qr-box img {
+        width: 200px;
+        height: 200px;
+        display: block;
+      }
+
+      /* ផ្នែកខាងស្តាំ (Order Info) */
+      .order-summary h3 {
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .order-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: #555;
+      }
+      .total-price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent);
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .status-badge {
+        margin-top: 10px;
+        padding: 8px 15px;
+        background: #fff3cd;
+        color: #856404;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+      }
+
+      /* Mobile Simulation Button */
+      .btn-simulate {
+        margin-top: 20px;
+        background: #2c3e50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        display: inline-block;
+        font-size: 0.9rem;
+      }
+      .btn-simulate:hover {
+        background: #34495e;
+      }
+
+      @media (max-width: 768px) {
+        .checkout-container {
+          grid-template-columns: 1fr;
+          border-right: none;
+        }
+        .payment-section {
+          border-right: none;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 30px;
+          padding-right: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="logo">Fashion Shop</div>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+      </ul>
+    </nav>
+
+    <div class="checkout-container">
+      <div class="payment-section">
+        <h2><i class="fas fa-qrcode"></i> Scan to Pay</h2>
+        <p>Please scan this QR code with your mobile app</p>
+
+        <div class="qr-box" id="qr-container">
+          <img id="qr-img" src="" alt="Generating QR..." />
+        </div>
+
+        <div id="payment-status">
+          <span class="status-badge"
+            ><i class="fas fa-spinner fa-spin"></i> Waiting for payment...</span
+          >
+        </div>
+
+        <a id="mobile-link" href="#" target="_blank" class="btn-simulate">
+          <i class="fas fa-mobile-alt"></i> Open Mobile Simulator
+        </a>
+      </div>
+
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+        <div id="order-items"></div>
+
+        <div class="total-price">
+          <span>Total:</span>
+          <span id="total-amount">$0.00</span>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.9rem; color: #777">
+          <p>Order ID: <span id="display-order-id">...</span></p>
+          <p>Merchant: Fashion Shop Inc.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ✅ កែប្រែ API URL សម្រាប់ Deploy (Relative Path)
+      const API_URL = "/api";
+
+      let currentOrderId = "";
+      let currentTotal = 0;
+      let pollingInterval;
+
+      // 1. ដំណើរការពេលបើកទំព័រ
+      window.onload = function () {
+        loadOrderDetails();
+      };
+
+      function loadOrderDetails() {
+        const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+        if (cart.length === 0) {
+          alert("Your cart is empty!");
+          window.location.href = "index.html";
+          return;
+        }
+
+        // គណនាលុយសរុប
+        currentTotal = cart.reduce(
+          (sum, item) => sum + item.price * item.qty,
+          0,
+        );
+
+        // បង្កើត Order ID ថ្មី (Random)
+        currentOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+
+        // បង្ហាញលើអេក្រង់
+        document.getElementById("total-amount").innerText =
+          "$" + currentTotal.toFixed(2);
+        document.getElementById("display-order-id").innerText = currentOrderId;
+
+        const itemsContainer = document.getElementById("order-items");
+        itemsContainer.innerHTML = cart
+          .map(
+            (item) => `
+                <div class="order-item">
+                    <span>${item.name} (x${item.qty})</span>
+                    <span>$${(item.price * item.qty).toFixed(2)}</span>
+                </div>
+            `,
+          )
+          .join("");
+
+        // បង្កើត QR Code
+        generateQRCode();
+
+        // ចាប់ផ្តើមរង់ចាំការបង់លុយ
+        startPolling();
+      }
+
+      function generateQRCode() {
+        // ✅ ប្រើ window.location.origin ដើម្បីយក Domain ដោយស្វ័យប្រវត្តិ (Localhost ឬ Glitch)
+        const currentDomain = window.location.origin;
+
+        // Link សម្រាប់ទូរស័ព្ទ (Link នេះនឹងបើក mobile-pay.html)
+        const paymentData = `${currentDomain}/mobile-pay.html?id=${currentOrderId}&amount=${currentTotal.toFixed(2)}`;
+
+        // បង្កើត QR តាមរយៈ API (GoQR ឬ QR Server)
+        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentData)}`;
+
+        document.getElementById("qr-img").src = qrApi;
+
+        // Update ប៊ូតុង Mobile Simulator
+        document.getElementById("mobile-link").href = paymentData;
+      }
+
+      // 2. មុខងារ Polling (ឆែកស្ថានភាពបង់លុយរៀងរាល់ 2 វិនាទី)
+      async function startPolling() {
+        if (pollingInterval) clearInterval(pollingInterval);
+
+        pollingInterval = setInterval(async () => {
+          try {
+            // ✅ ហៅទៅកាន់ API ត្រឹមត្រូវ (/api/check-status)
+            const res = await fetch(
+              `${API_URL}/check-status/${currentOrderId}`,
+            );
+            const data = await res.json();
+
+            if (data.status === "SUCCESS") {
+              clearInterval(pollingInterval); // ឈប់ឆែក
+
+              // បង្ហាញសញ្ញាជោគជ័យ
+              document.getElementById("qr-container").innerHTML = `
+                            <div style="color: green; font-size: 1.5rem; font-weight: bold; padding: 50px 0;">
+                                <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 10px;"></i><br>
+                                Payment Successful!
+                            </div>
+                        `;
+              document.getElementById("payment-status").innerHTML =
+                `<span class="status-badge" style="background:#d4edda; color:#155724;">Paid Successfully</span>`;
+
+              // សម្អាត Cart
+              localStorage.removeItem("shoppingCart");
+
+              // រង់ចាំ 3 វិនាទី រួចត្រឡប់ទៅ Home
+              setTimeout(() => {
+                window.location.href = "index.html";
+              }, 3000);
+            }
+          } catch (error) {
+            console.error("Polling error:", error);
+          }
+        }, 2000);
+      }
+    </script>
+  </body>
+</html>

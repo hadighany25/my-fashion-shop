@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fashion Shop | English Standard</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div id="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <header>
+      <nav class="navbar">
+        <div class="logo">
+          <span class="logo-icon"><i class="fas fa-shopping-bag"></i></span>
+          Fashion Shop
+        </div>
+
+        <div class="search-container">
+          <input
+            type="text"
+            id="productSearch"
+            placeholder="Search for products..."
+            onkeyup="searchProducts()"
+          />
+          <button><i class="fas fa-search"></i></button>
+        </div>
+
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="#shop">Shop</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li>
+            <a href="payment.html" class="cart-icon">
+              <i class="fas fa-shopping-cart"></i>
+              <span class="cart-count">0</span>
+            </a>
+          </li>
+          <li>
+            <a href="login.html" id="auth-link"
+              ><i class="fas fa-user"></i> Login</a
+            >
+          </li>
+        </ul>
+
+        <div class="menu-toggle" id="mobileMenu">
+          <i class="fas fa-bars"></i>
+        </div>
+      </nav>
+    </header>
+
+    <section class="hero fade-in">
+      <div class="hero-content">
+        <h1>Elevate Your Style</h1>
+        <p>The best fashion collection for 2026</p>
+        <a
+          href="#shop"
+          class="buy-now"
+          style="
+            width: 200px;
+            padding: 15px;
+            text-decoration: none;
+            margin-top: 20px;
+            display: inline-block;
+            border-radius: 30px;
+          "
+          >Shop Now</a
+        >
+      </div>
+    </section>
+
+    <div class="category-filter">
+      <button class="btn-filter active" data-category="all">
+        All Products
+      </button>
+      <button class="btn-filter" data-category="shirt">Shirts</button>
+      <button class="btn-filter" data-category="pants">Pants</button>
+      <button class="btn-filter" data-category="shoes">Shoes</button>
+      <button class="btn-filter" data-category="accessories">
+        Accessories
+      </button>
+    </div>
+
+    <section id="shop" class="products-container">
+      <div class="product-grid" id="productGrid"></div>
+    </section>
+
+    <section id="contact" class="contact-section">
+      <h2 style="font-size: 2.5rem; margin-bottom: 10px">Contact Us</h2>
+      <p style="margin-bottom: 40px; color: #666">
+        Have any questions? Send us a message!
+      </p>
+      <div class="contact-form">
+        <input type="text" placeholder="Full Name" required />
+        <input type="email" placeholder="Email Address" required />
+        <textarea rows="6" placeholder="Your Message" required></textarea>
+        <button
+          type="button"
+          class="buy-now"
+          style="width: 250px; border: none; font-size: 1.2rem"
+        >
+          Send Message
+        </button>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-container">
+        <div class="footer-col">
+          <h3 style="font-family: &quot;Metal&quot;, serif; font-size: 2rem">
+            Fashion Shop
+          </h3>
+          <p>High quality products, affordable prices for everyone.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#shop">Shop</a></li>
+            <li><a href="payment.html">Checkout</a></li>
+            <li><a href="admin.html">Admin Panel</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-telegram"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+          <p>phone: +855 123 456 789</p>
+          <p>email: info@fashionshop.com</p>
+        </div>
+        <div class="footer-col">
+          <h3>Location</h3>
+          <p>Phnom Penh, Cambodia</p>
+          <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Fashion Shop. All Rights Reserved.</p>
+      </div>
+    </footer>
+
+    <button id="backToTop" title="Go to top">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <div id="productModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="modal-body">
+          <div class="modal-img">
+            <img id="m-img" src="" alt="Product Image" />
+          </div>
+          <div class="modal-info">
+            <h2 id="m-name">Product Name</h2>
+            <p class="m-category" id="m-category">Category</p>
+            <p class="m-desc">
+              This is a premium quality product designed for your style. Made
+              with durable materials and excellent craftsmanship.
+            </p>
+            <h3 class="price" id="m-price">$0.00</h3>
+            <div class="action-buttons">
+              <button class="add-to-cart" id="m-add-btn">Add to Cart</button>
+              <button class="buy-now" id="m-buy-btn">Buy Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="toast">Added to Cart Successfully!</div>
+    <script src="script.js"></script>
+  </body>
+</html>

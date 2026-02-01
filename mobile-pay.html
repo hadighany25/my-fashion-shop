@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm Payment</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        padding: 50px 20px;
+        background: #f4f4f4;
+      }
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+      }
+      .amount {
+        font-size: 2rem;
+        color: #d35400;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      button {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Fashion Shop Payment</h1>
+      <p>You are paying for Order ID: <span id="orderId">...</span></p>
+      <div class="amount" id="amountDisplay">$0.00</div>
+      <button onclick="confirmPayment()">✅ I Have Paid</button>
+    </div>
+
+    <script>
+      // ចាប់យកទិន្នន័យពី Link (URL)
+      const params = new URLSearchParams(window.location.search);
+      const orderId = params.get("id");
+      const amount = params.get("amount");
+
+      document.getElementById("orderId").innerText = orderId;
+      document.getElementById("amountDisplay").innerText = "$" + amount;
+
+      async function confirmPayment() {
+        try {
+          // ហៅទៅកាន់ Server កុំព្យូទ័ររបស់អ្នក (IP: 192.168.0.109)
+          await fetch("http://192.168.18.30:5000/api/pay-confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId }),
+          });
+
+          alert("Payment Confirmed! សូមមើលនៅលើអេក្រង់កុំព្យូទ័ររបស់អ្នក។");
+          window.close();
+        } catch (error) {
+          alert(
+            "មានបញ្ហាការតភ្ជាប់! សូមប្រាកដថាអ្នកប្រើ Wifi តែមួយជាមួយកុំព្យូទ័រ។",
+          );
+          console.error(error);
+        }
+      }
+    </script>
+  </body>
+</html>

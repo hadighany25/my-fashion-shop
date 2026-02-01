@@ -1,0 +1,226 @@
+[
+  {
+    "id": 1,
+    "name": "Classic White T-Shirt",
+    "price": 15,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500"
+  },
+  {
+    "id": 2,
+    "name": "Premium Black Polo",
+    "price": 22,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500"
+  },
+  {
+    "id": 3,
+    "name": "Blue Denim Jacket",
+    "price": 45,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=500"
+  },
+  {
+    "id": 4,
+    "name": "Urban Grey Hoodie",
+    "price": 35,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500"
+  },
+  {
+    "id": 5,
+    "name": "Casual Checked Shirt",
+    "price": 28,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1589310243389-96a5483213a8?w=500"
+  },
+  {
+    "id": 6,
+    "name": "Summer Floral Shirt",
+    "price": 20,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=500"
+  },
+  {
+    "id": 7,
+    "name": "Slim Fit Blue Jeans",
+    "price": 30,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500"
+  },
+  {
+    "id": 8,
+    "name": "Black Chino Pants",
+    "price": 25,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=500"
+  },
+  {
+    "id": 9,
+    "name": "Cargo Pants Olive",
+    "price": 32,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1517438476312-10d79c077509?w=500"
+  },
+  {
+    "id": 10,
+    "name": "Sport Joggers Black",
+    "price": 22,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1552902865-b72c031ac5ea?w=500"
+  },
+  {
+    "id": 11,
+    "name": "Khaki Work Pants",
+    "price": 28,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=500"
+  },
+  {
+    "id": 12,
+    "name": "Casual Cotton Shorts",
+    "price": 18,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500"
+  },
+  {
+    "id": 13,
+    "name": "Nike Air Max Red",
+    "price": 120,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"
+  },
+  {
+    "id": 14,
+    "name": "Adidas Runner White",
+    "price": 85,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=500"
+  },
+  {
+    "id": 15,
+    "name": "Classic Sneakers",
+    "price": 55,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=500"
+  },
+  {
+    "id": 16,
+    "name": "Puma Sport Black",
+    "price": 60,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=500"
+  },
+  {
+    "id": 17,
+    "name": "Leather Formal Shoes",
+    "price": 75,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=500"
+  },
+  {
+    "id": 18,
+    "name": "Canvas High Tops",
+    "price": 45,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500"
+  },
+  {
+    "id": 19,
+    "name": "Luxury Silver Watch",
+    "price": 250,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
+  },
+  {
+    "id": 20,
+    "name": "Rayban Sunglasses",
+    "price": 150,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500"
+  },
+  {
+    "id": 21,
+    "name": "Leather Travel Bag",
+    "price": 180,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=500"
+  },
+  {
+    "id": 22,
+    "name": "Gold Plated Necklace",
+    "price": 300,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500"
+  },
+  {
+    "id": 23,
+    "name": "Smart Watch Series 7",
+    "price": 350,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500"
+  },
+  {
+    "id": 24,
+    "name": "Classic Leather Belt",
+    "price": 25,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"
+  },
+  {
+    "id": 25,
+    "name": "Running Cap",
+    "price": 12,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=500"
+  },
+  {
+    "id": 26,
+    "name": "Wool Winter Scarf",
+    "price": 20,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=500"
+  },
+  {
+    "id": 27,
+    "name": "Cotton Socks Pack",
+    "price": 10,
+    "category": "accessories",
+    "img": "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?w=500"
+  },
+  {
+    "id": 28,
+    "name": "V-Neck Sweater",
+    "price": 40,
+    "category": "shirt",
+    "img": "https://images.unsplash.com/photo-1516762689617-e1cffcef479d?w=500"
+  },
+  {
+    "id": 29,
+    "name": "Linen Summer Pants",
+    "price": 30,
+    "category": "pants",
+    "img": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500"
+  },
+  {
+    "id": 30,
+    "name": "Sport Gym Sneakers",
+    "price": 50,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=500"
+  },
+  {
+    "id": 1769953196171,
+    "name": "shoes style",
+    "price": 50,
+    "category": "shoes",
+    "img": "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+  },
+  {
+    "id": 1769953368678,
+    "name": "Sport Sneakers",
+    "price": 35,
+    "category": "shoes",
+    "img": "https://media.istockphoto.com/id/1317021486/photo/trendy-green-shoes-on-colorful-background-sporty-fashionable-shoes.webp?a=1&b=1&s=612x612&w=0&k=20&c=kVhhP-Sn1eA5OG16Cu7XDXRKZr1coxzwdJOdGKPjedM="
+  }
+]

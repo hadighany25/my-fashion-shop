@@ -16,13 +16,13 @@
         background: white;
         padding: 40px;
         border-radius: 15px;
-        box-shadow: var(--shadow);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 40px;
       }
 
-      /* ផ្នែកខាងឆ្វេង (QR Code) */
+      /* ផ្នែក QR Code */
       .payment-section {
         text-align: center;
         border-right: 1px solid #eee;
@@ -34,7 +34,7 @@
         border-radius: 10px;
         margin: 20px 0;
         display: inline-block;
-        border: 2px dashed var(--accent);
+        border: 2px dashed #d35400;
       }
       .qr-box img {
         width: 200px;
@@ -42,25 +42,75 @@
         display: block;
       }
 
-      /* ផ្នែកខាងស្តាំ (Order Info) */
+      /* ផ្នែក Order Summary */
       .order-summary h3 {
-        border-bottom: 2px solid var(--primary);
+        border-bottom: 2px solid #2c3e50;
         padding-bottom: 10px;
         margin-bottom: 20px;
       }
+
+      /* 🔥 Style សម្រាប់បញ្ជីទំនិញថ្មី 🔥 */
       .order-item {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 10px;
-        color: #555;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
       }
+      .item-info {
+        flex: 1;
+      }
+      .item-name {
+        font-weight: bold;
+        color: #333;
+        display: block;
+      }
+      .item-price {
+        color: #777;
+        font-size: 0.9rem;
+      }
+
+      .item-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .qty-btn {
+        background: #eee;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #333;
+        transition: 0.2s;
+      }
+      .qty-btn:hover {
+        background: #ddd;
+      }
+      .remove-btn {
+        background: #ffcccc;
+        color: #c0392b;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .remove-btn:hover {
+        background: #ffaaaa;
+      }
+
+      /* តម្លៃសរុប */
       .total-price {
         font-size: 1.5rem;
         font-weight: bold;
-        color: var(--accent);
+        color: #d35400;
         margin-top: 20px;
-        border-top: 1px solid #eee;
-        padding-top: 10px;
+        border-top: 2px solid #eee;
+        padding-top: 15px;
         display: flex;
         justify-content: space-between;
       }
@@ -74,8 +124,6 @@
         font-weight: bold;
         display: inline-block;
       }
-
-      /* Mobile Simulation Button */
       .btn-simulate {
         margin-top: 20px;
         background: #2c3e50;
@@ -85,9 +133,6 @@
         border-radius: 5px;
         display: inline-block;
         font-size: 0.9rem;
-      }
-      .btn-simulate:hover {
-        background: #34495e;
       }
 
       @media (max-width: 768px) {
@@ -115,7 +160,7 @@
     <div class="checkout-container">
       <div class="payment-section">
         <h2><i class="fas fa-qrcode"></i> Scan to Pay</h2>
-        <p>Please scan this QR code with your mobile app</p>
+        <p>Scan to pay via mobile banking</p>
 
         <div class="qr-box" id="qr-container">
           <img id="qr-img" src="" alt="Generating QR..." />
@@ -133,7 +178,7 @@
       </div>
 
       <div class="order-summary">
-        <h3>Order Summary</h3>
+        <h3>Your Order</h3>
         <div id="order-items"></div>
 
         <div class="total-price">
@@ -143,98 +188,125 @@
 
         <div style="margin-top: 20px; font-size: 0.9rem; color: #777">
           <p>Order ID: <span id="display-order-id">...</span></p>
-          <p>Merchant: Fashion Shop Inc.</p>
         </div>
       </div>
     </div>
 
     <script>
-      // ✅ កែប្រែ API URL សម្រាប់ Deploy (Relative Path)
+      // ✅ API URL
       const API_URL = "/api";
 
       let currentOrderId = "";
       let currentTotal = 0;
       let pollingInterval;
 
-      // 1. ដំណើរការពេលបើកទំព័រ
       window.onload = function () {
-        loadOrderDetails();
+        // បង្កើត Order ID តែម្តងគត់ ពេលចូលដំបូង
+        currentOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById("display-order-id").innerText = currentOrderId;
+
+        renderOrderList(); // បង្ហាញទំនិញ
+        startPolling(); // ចាំមើលគេបង់លុយ
       };
 
-      function loadOrderDetails() {
+      // 🔥 មុខងារបង្ហាញបញ្ជីទំនិញ និងប៊ូតុង 🔥
+      function renderOrderList() {
         const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+        const itemsContainer = document.getElementById("order-items");
 
         if (cart.length === 0) {
-          alert("Your cart is empty!");
+          alert("Cart is empty! Redirecting...");
           window.location.href = "index.html";
           return;
         }
 
-        // គណនាលុយសរុប
+        // គណនាលុយសរុបថ្មី
         currentTotal = cart.reduce(
           (sum, item) => sum + item.price * item.qty,
           0,
         );
-
-        // បង្កើត Order ID ថ្មី (Random)
-        currentOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
-
-        // បង្ហាញលើអេក្រង់
         document.getElementById("total-amount").innerText =
           "$" + currentTotal.toFixed(2);
-        document.getElementById("display-order-id").innerText = currentOrderId;
 
-        const itemsContainer = document.getElementById("order-items");
+        // បង្កើត HTML សម្រាប់បញ្ជីទំនិញ
         itemsContainer.innerHTML = cart
           .map(
             (item) => `
                 <div class="order-item">
-                    <span>${item.name} (x${item.qty})</span>
-                    <span>$${(item.price * item.qty).toFixed(2)}</span>
+                    <div class="item-info">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-price">$${item.price} x ${item.qty}</span>
+                    </div>
+                    <div class="item-controls">
+                        <button class="qty-btn" onclick="updateQty(${item.id}, -1)">-</button>
+                        
+                        <span style="font-weight:bold; min-width:20px; text-align:center;">${item.qty}</span>
+                        
+                        <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+                        
+                        <button class="remove-btn" onclick="removeItem(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `,
           )
           .join("");
 
-        // បង្កើត QR Code
+        // 🔄 បង្កើត QR Code ថ្មី ព្រោះតម្លៃអាចប្រែប្រួល
         generateQRCode();
+      }
 
-        // ចាប់ផ្តើមរង់ចាំការបង់លុយ
-        startPolling();
+      // 🔥 មុខងារកែចំនួន (Add/Minus) 🔥
+      function updateQty(id, change) {
+        let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+        const item = cart.find((p) => p.id === id);
+
+        if (item) {
+          item.qty += change;
+          // បើដកដល់ 0 គឺលុបចោល
+          if (item.qty <= 0) {
+            cart = cart.filter((p) => p.id !== id);
+          }
+        }
+
+        localStorage.setItem("shoppingCart", JSON.stringify(cart));
+        renderOrderList(); // Refresh អេក្រង់ឡើងវិញ
+      }
+
+      // 🔥 មុខងារលុបចោល (Remove) 🔥
+      function removeItem(id) {
+        if (!confirm("Are you sure you want to remove this item?")) return;
+
+        let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+        cart = cart.filter((p) => p.id !== id);
+
+        localStorage.setItem("shoppingCart", JSON.stringify(cart));
+        renderOrderList(); // Refresh អេក្រង់ឡើងវិញ
       }
 
       function generateQRCode() {
-        // ✅ ប្រើ window.location.origin ដើម្បីយក Domain ដោយស្វ័យប្រវត្តិ (Localhost ឬ Glitch)
         const currentDomain = window.location.origin;
-
-        // Link សម្រាប់ទូរស័ព្ទ (Link នេះនឹងបើក mobile-pay.html)
+        // Update Link ជាមួយតម្លៃថ្មី (Total ថ្មី)
         const paymentData = `${currentDomain}/mobile-pay.html?id=${currentOrderId}&amount=${currentTotal.toFixed(2)}`;
-
-        // បង្កើត QR តាមរយៈ API (GoQR ឬ QR Server)
         const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentData)}`;
 
         document.getElementById("qr-img").src = qrApi;
-
-        // Update ប៊ូតុង Mobile Simulator
         document.getElementById("mobile-link").href = paymentData;
       }
 
-      // 2. មុខងារ Polling (ឆែកស្ថានភាពបង់លុយរៀងរាល់ 2 វិនាទី)
       async function startPolling() {
         if (pollingInterval) clearInterval(pollingInterval);
 
         pollingInterval = setInterval(async () => {
           try {
-            // ✅ ហៅទៅកាន់ API ត្រឹមត្រូវ (/api/check-status)
             const res = await fetch(
               `${API_URL}/check-status/${currentOrderId}`,
             );
             const data = await res.json();
 
             if (data.status === "SUCCESS") {
-              clearInterval(pollingInterval); // ឈប់ឆែក
-
-              // បង្ហាញសញ្ញាជោគជ័យ
+              clearInterval(pollingInterval);
               document.getElementById("qr-container").innerHTML = `
                             <div style="color: green; font-size: 1.5rem; font-weight: bold; padding: 50px 0;">
                                 <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 10px;"></i><br>
@@ -243,11 +315,7 @@
                         `;
               document.getElementById("payment-status").innerHTML =
                 `<span class="status-badge" style="background:#d4edda; color:#155724;">Paid Successfully</span>`;
-
-              // សម្អាត Cart
               localStorage.removeItem("shoppingCart");
-
-              // រង់ចាំ 3 វិនាទី រួចត្រឡប់ទៅ Home
               setTimeout(() => {
                 window.location.href = "index.html";
               }, 3000);

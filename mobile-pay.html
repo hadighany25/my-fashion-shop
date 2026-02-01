@@ -3,27 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Confirm Payment</title>
+    <title>Mobile Payment</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
       body {
-        font-family: sans-serif;
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
         text-align: center;
-        padding: 50px 20px;
-        background: #f4f4f4;
       }
-      .card {
+      .pay-card {
         background: white;
         padding: 30px;
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        color: #2c3e50;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 400px;
       }
       .amount {
-        font-size: 2rem;
-        color: #d35400;
+        font-size: 2.5rem;
         font-weight: bold;
+        color: #2c3e50;
         margin: 20px 0;
       }
       button {
@@ -32,48 +39,79 @@
         border: none;
         padding: 15px 30px;
         font-size: 1.2rem;
-        border-radius: 10px;
+        border-radius: 50px;
         cursor: pointer;
         width: 100%;
+        transition: 0.3s;
       }
-      button:active {
-        transform: scale(0.98);
+      button:hover {
+        background: #219150;
       }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>Fashion Shop Payment</h1>
-      <p>You are paying for Order ID: <span id="orderId">...</span></p>
-      <div class="amount" id="amountDisplay">$0.00</div>
-      <button onclick="confirmPayment()">✅ I Have Paid</button>
+    <div class="pay-card" id="main-card">
+      <i class="fas fa-wallet" style="font-size: 3rem; color: #27ae60"></i>
+      <h2>Confirm Payment</h2>
+      <p>You are paying to Fashion Shop</p>
+      <div class="amount" id="display-amount">$0.00</div>
+      <p style="color: #777; margin-bottom: 30px">
+        Order ID: <span id="display-id">...</span>
+      </p>
+
+      <button onclick="confirmPayment()">Pay Now</button>
     </div>
 
     <script>
-      // ចាប់យកទិន្នន័យពី Link (URL)
+      // ✅ ប្រើ Relative Path ដូចគ្នា (សំខាន់បំផុត!)
+      const API_URL = "/api";
+
+      // ចាប់យកទិន្នន័យពី URL (ដែលបាន Scan ពី QR)
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get("id");
       const amount = params.get("amount");
 
-      document.getElementById("orderId").innerText = orderId;
-      document.getElementById("amountDisplay").innerText = "$" + amount;
+      // បង្ហាញទិន្នន័យលើអេក្រង់
+      if (orderId && amount) {
+        document.getElementById("display-id").innerText = orderId;
+        document.getElementById("display-amount").innerText = "$" + amount;
+      } else {
+        alert("Invalid QR Code!");
+      }
 
       async function confirmPayment() {
+        const btn = document.querySelector("button");
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
         try {
-          // ហៅទៅកាន់ Server កុំព្យូទ័ររបស់អ្នក (IP: 192.168.0.109)
-          await fetch("http://192.168.18.30:5000/api/pay-confirm", {
+          // ហៅទៅកាន់ Server (Render)
+          const res = await fetch(`${API_URL}/pay-confirm`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId }),
+            body: JSON.stringify({ orderId: orderId }),
           });
 
-          alert("Payment Confirmed! សូមមើលនៅលើអេក្រង់កុំព្យូទ័ររបស់អ្នក។");
-          window.close();
+          const data = await res.json();
+
+          if (data.success) {
+            document.getElementById("main-card").innerHTML = `
+                        <div style="color: #27ae60; padding: 40px 0;">
+                            <i class="fas fa-check-circle" style="font-size: 4rem;"></i>
+                            <h2>Payment Successful!</h2>
+                            <p>You can close this window now.</p>
+                        </div>
+                    `;
+          } else {
+            alert("Payment Failed! Please try again.");
+            btn.innerText = "Pay Now";
+            btn.disabled = false;
+          }
         } catch (error) {
-          alert(
-            "មានបញ្ហាការតភ្ជាប់! សូមប្រាកដថាអ្នកប្រើ Wifi តែមួយជាមួយកុំព្យូទ័រ។",
-          );
           console.error(error);
+          alert("Cannot connect to server! (Check your internet)");
+          btn.innerText = "Pay Now";
+          btn.disabled = false;
         }
       }
     </script>

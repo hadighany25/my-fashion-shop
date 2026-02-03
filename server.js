@@ -167,8 +167,9 @@ app.get("/api/check-status/:orderId", (req, res) => {
 // ==============================
 
 // ប្រើ PORT ពី System (សម្រាប់ Glitch/Render) ឬ 5000 (សម្រាប់ Local)
-const PORT = process.env.PORT || 5000;
+// សូមប្ដូរមកប្រើកូដថ្មីនេះវិញ (ត្រូវ):
+const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -3,33 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard | Fashion Shop</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <style>
+      /* Admin Specific Styles */
+      body {
+        background: #f4f6f9;
+        color: #333;
+      }
       .admin-container {
-        padding: 40px 10%;
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
       }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
-        margin-bottom: 50px;
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
       }
-      .stat-card {
+      .card {
         background: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: var(--shadow);
-        text-align: center;
-      }
-      .stat-card h2 {
-        font-size: 2.5rem;
-        color: var(--accent);
-        margin-top: 10px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
       }
 
       /* Form Styles */
@@ -37,39 +39,44 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
-        text-align: left;
       }
-      .form-grid input,
-      .form-grid select {
+      input,
+      select {
         width: 100%;
         padding: 12px;
         border: 1px solid #ddd;
         border-radius: 8px;
-        outline: none;
+        margin-bottom: 15px;
       }
-      .btn-add {
-        background: var(--accent);
-        color: white;
-        padding: 12px 25px;
+
+      button {
+        padding: 12px 20px;
         border: none;
         border-radius: 8px;
         cursor: pointer;
         font-weight: bold;
-        margin-top: 20px;
+        transition: 0.3s;
+      }
+      .btn-primary {
+        background: #2c3e50;
+        color: white;
         width: 100%;
       }
-      .btn-add:hover {
-        opacity: 0.9;
+      .btn-primary:hover {
+        background: #34495e;
       }
+
+      .btn-cancel {
+        background: #e74c3c;
+        color: white;
+        display: none;
+        margin-left: 10px;
+      } /* ប៊ូតុង Cancel */
 
       /* Table Styles */
       table {
         width: 100%;
         border-collapse: collapse;
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: var(--shadow);
         margin-top: 20px;
       }
       th,
@@ -79,178 +86,137 @@
         border-bottom: 1px solid #eee;
       }
       th {
-        background: var(--primary);
-        color: white;
+        background: #f8f9fa;
+        color: #555;
       }
-      .btn-delete {
-        background: #e74c3c;
-        color: white;
-        border: none;
-        padding: 8px 15px;
+      .product-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 5px;
+      }
+
+      .action-btn {
+        padding: 8px 12px;
         border-radius: 5px;
         cursor: pointer;
+        border: none;
+        color: white;
+        font-size: 0.9rem;
+      }
+      .btn-edit {
+        background: #f39c12;
+        margin-right: 5px;
+      }
+      .btn-delete {
+        background: #c0392b;
+      }
+
+      @media (max-width: 768px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <header>
-      <nav class="navbar">
-        <div class="logo">Admin Panel</div>
-        <ul class="nav-links">
-          <li><a href="index.html">View Shop</a></li>
-          <li><a href="#" onclick="logout()">Logout</a></li>
-        </ul>
-      </nav>
-    </header>
-
     <div class="admin-container">
-      <h1>Dashboard Overview</h1>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Total Users</h3>
-          <h2 id="totalUsers">0</h2>
-        </div>
-        <div class="stat-card">
-          <h3>Total Products</h3>
-          <h2 id="totalProducts">0</h2>
-        </div>
+      <div class="header">
+        <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
+        <button
+          onclick="logout()"
+          style="
+            background: transparent;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+          "
+        >
+          Logout
+        </button>
       </div>
 
-      <div class="stat-card" style="text-align: left; margin-bottom: 40px">
-        <h3 style="margin-bottom: 20px; color: var(--primary)">
-          <i class="fas fa-plus-circle"></i> Add New Product
-        </h3>
-        <div class="form-grid">
-          <input
-            type="text"
-            id="pName"
-            placeholder="Product Name (e.g. Red Shirt)"
-          />
-          <input type="number" id="pPrice" placeholder="Price ($)" />
-          <select id="pCategory">
-            <option value="shirt">Shirt</option>
-            <option value="pants">Pants</option>
-            <option value="shoes">Shoes</option>
-            <option value="accessories">Accessories</option>
-          </select>
-          <input type="text" id="pImg" placeholder="Image URL (Link)" />
-        </div>
-        <button class="btn-add" onclick="addProduct()">Add Product Now</button>
+      <div class="card">
+        <h3 id="form-title">Add New Product</h3>
+        <form onsubmit="handleFormSubmit(event)">
+          <input type="hidden" id="edit-id" />
+          <div class="form-grid">
+            <div>
+              <label>Product Name</label>
+              <input
+                type="text"
+                id="p-name"
+                placeholder="Ex: Nike Shoes"
+                required
+              />
+            </div>
+            <div>
+              <label>Price ($)</label>
+              <input
+                type="number"
+                id="p-price"
+                placeholder="Ex: 50"
+                step="0.01"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Category</label>
+              <select id="p-category">
+                <option value="shirts">Shirts</option>
+                <option value="pants">Pants</option>
+                <option value="shoes">Shoes</option>
+                <option value="accessories">Accessories</option>
+              </select>
+            </div>
+            <div>
+              <label>Image URL</label>
+              <input type="url" id="p-img" placeholder="https://..." required />
+            </div>
+          </div>
+
+          <div style="display: flex">
+            <button type="submit" class="btn-primary" id="btn-submit">
+              Add Product
+            </button>
+            <button
+              type="button"
+              class="btn-cancel"
+              id="btn-cancel"
+              onclick="resetForm()"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
 
-      <h2>Product List</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="productTableBody"></tbody>
-      </table>
+      <div class="card">
+        <h3>Product List</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="product-list"></tbody>
+        </table>
+      </div>
     </div>
 
     <script>
-      // --- 🔒 SECURITY CHECK (ការពារ Admin) ---
-      // ដាក់នៅបន្ទាត់លើគេបង្អស់ក្នុង Script
-      const currentUser = localStorage.getItem("username");
-
-      // បើមិនទាន់ Login ឬ មិនមែនជាឈ្មោះ "admin" ទេ
-      if (!currentUser || currentUser !== "admin") {
-        alert("⛔ អ្នកគ្មានសិទ្ធិចូលមើលទំព័រនេះទេ! (Admins Only)");
-        window.location.href = "login.html"; // ធាក់ចេញទៅ Login វិញភ្លាម
-      }
-
       const API_URL = "/api";
 
-      // 1. Fetch Users
-      async function fetchUsers() {
-        try {
-          const res = await fetch(`${API_URL}/admin/users`);
-          const users = await res.json();
-          document.getElementById("totalUsers").innerText = users.length;
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      // 2. Fetch Products
-      async function fetchProducts() {
-        try {
-          const res = await fetch(`${API_URL}/products`);
-          const products = await res.json();
-
-          document.getElementById("totalProducts").innerText = products.length;
-
-          const tbody = document.getElementById("productTableBody");
-          if (products.length === 0) {
-            tbody.innerHTML =
-              "<tr><td colspan='5' style='text-align:center;'>No products found. Add one!</td></tr>";
-            return;
-          }
-
-          tbody.innerHTML = products
-            .map(
-              (p) => `
-            <tr>
-                <td><img src="${p.img}" width="50" style="border-radius: 5px;"></td>
-                <td>${p.name}</td>
-                <td>$${p.price}</td>
-                <td>${p.category}</td>
-                <td>
-                    <button class="btn-delete" onclick="deleteProduct(${p.id})">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </td>
-            </tr>
-          `,
-            )
-            .join("");
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      // 3. Add Product
-      async function addProduct() {
-        const name = document.getElementById("pName").value;
-        const price = document.getElementById("pPrice").value;
-        const category = document.getElementById("pCategory").value;
-        const img = document.getElementById("pImg").value;
-
-        if (!name || !price || !img) return alert("Please fill all fields!");
-
-        try {
-          await fetch(`${API_URL}/products`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, price, category, img }),
-          });
-          alert("Product Added!");
-          fetchProducts(); // Refresh list
-
-          // Clear inputs
-          document.getElementById("pName").value = "";
-          document.getElementById("pPrice").value = "";
-          document.getElementById("pImg").value = "";
-        } catch (error) {
-          alert("Error adding product");
-        }
-      }
-
-      // 4. Delete Product
-      async function deleteProduct(id) {
-        if (!confirm("Are you sure you want to delete this product?")) return;
-        try {
-          await fetch(`${API_URL}/products/${id}`, { method: "DELETE" });
-          fetchProducts();
-        } catch (error) {
-          alert("Error deleting product");
-        }
+      // 🔒 ការពារ Admin (Security Check)
+      const currentUser = localStorage.getItem("username");
+      if (!currentUser || currentUser !== "admin") {
+        window.location.href = "login.html";
       }
 
       function logout() {
@@ -258,10 +224,106 @@
         window.location.href = "login.html";
       }
 
-      window.onload = function () {
-        fetchUsers();
-        fetchProducts();
-      };
+      // --- 1. LOAD PRODUCTS ---
+      async function loadProducts() {
+        const res = await fetch(`${API_URL}/products`);
+        const products = await res.json();
+        const tbody = document.getElementById("product-list");
+
+        tbody.innerHTML = products
+          .map(
+            (p) => `
+                <tr>
+                    <td><img src="${p.img}" class="product-img" onerror="this.src='https://via.placeholder.com/50'"></td>
+                    <td>${p.name}</td>
+                    <td>$${p.price}</td>
+                    <td><span style="background:#eee; padding:5px 10px; border-radius:15px; font-size:0.8rem">${p.category}</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="startEdit('${p.id}', '${p.name}', '${p.price}', '${p.category}', '${p.img}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteProduct('${p.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `,
+          )
+          .join("");
+      }
+
+      loadProducts(); // Run ពេលបើកភ្លាម
+
+      // --- 2. HANDLE SUBMIT (ADD or EDIT) ---
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("edit-id").value;
+        const name = document.getElementById("p-name").value;
+        const price = document.getElementById("p-price").value;
+        const category = document.getElementById("p-category").value;
+        const img = document.getElementById("p-img").value;
+
+        // បើមាន ID មានន័យថាកំពុង Edit, បើអត់មានគឺ Add New
+        const method = id ? "PUT" : "POST";
+        const url = id ? `${API_URL}/products/${id}` : `${API_URL}/products`;
+
+        try {
+          const res = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, price, category, img }),
+          });
+
+          if (res.ok) {
+            alert(id ? "Updated successfully!" : "Added successfully!");
+            resetForm(); // លុប Form ចោល
+            loadProducts(); // Load ទិន្នន័យថ្មី
+          } else {
+            alert("Something went wrong!");
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // --- 3. START EDIT MODE ---
+      function startEdit(id, name, price, category, img) {
+        // បញ្ចូលទិន្នន័យចាស់ទៅក្នុង Form
+        document.getElementById("edit-id").value = id;
+        document.getElementById("p-name").value = name;
+        document.getElementById("p-price").value = price;
+        document.getElementById("p-category").value = category;
+        document.getElementById("p-img").value = img;
+
+        // ប្តូរអក្សរប៊ូតុង
+        document.getElementById("form-title").innerText = "Edit Product";
+        document.getElementById("btn-submit").innerText = "Update Product";
+        document.getElementById("btn-submit").style.background = "#f39c12";
+        document.getElementById("btn-cancel").style.display = "block"; // បង្ហាញប៊ូតុង Cancel
+
+        // រំកិលទៅមើល Form ខាងលើ
+        window.scrollTo(0, 0);
+      }
+
+      // --- 4. RESET FORM (CANCEL) ---
+      function resetForm() {
+        document.querySelector("form").reset();
+        document.getElementById("edit-id").value = ""; // លុប ID ចោល
+
+        document.getElementById("form-title").innerText = "Add New Product";
+        document.getElementById("btn-submit").innerText = "Add Product";
+        document.getElementById("btn-submit").style.background = "#2c3e50";
+        document.getElementById("btn-cancel").style.display = "none";
+      }
+
+      // --- 5. DELETE PRODUCT ---
+      async function deleteProduct(id) {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+
+        await fetch(`${API_URL}/products/${id}`, { method: "DELETE" });
+        loadProducts();
+      }
     </script>
   </body>
 </html>

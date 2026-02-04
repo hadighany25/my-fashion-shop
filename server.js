@@ -151,6 +151,25 @@ app.post("/api/pay-confirm", (req, res) => {
   }
 });
 
+// Update Product (កែប្រែផលិតផល) - បន្ថែមថ្មី
+app.put("/api/products/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, price, category, img } = req.body;
+  let products = getData(PRODUCTS_FILE);
+
+  // រកមើលផលិតផលតាម ID
+  const index = products.findIndex((p) => p.id == id);
+
+  if (index !== -1) {
+    // កែប្រែទិន្នន័យ
+    products[index] = { ...products[index], name, price, category, img };
+    saveData(PRODUCTS_FILE, products);
+    res.json({ success: true, message: "Product updated!" });
+  } else {
+    res.status(404).json({ success: false, message: "Product not found" });
+  }
+});
+
 // កុំព្យូទ័រហៅមកសួរថា "បង់លុយនៅ?"
 app.get("/api/check-status/:orderId", (req, res) => {
   const { orderId } = req.params;

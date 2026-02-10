@@ -239,7 +239,7 @@
                     <td>$${p.price}</td>
                     <td><span style="background:#eee; padding:5px 10px; border-radius:15px; font-size:0.8rem">${p.category}</span></td>
                     <td>
-                        <button class="action-btn btn-edit" onclick="startEdit('${p.id}', '${p.name}', '${p.price}', '${p.category}', '${p.img}')">
+                        <button class="action-btn btn-edit" onclick="startEdit('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.category}', '${p.img}')">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="action-btn btn-delete" onclick="deleteProduct('${p.id}')">

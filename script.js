@@ -43,35 +43,50 @@ async function loadProducts() {
 // =========================================
 function displayProducts(items) {
   const grid = document.getElementById("productGrid");
-  if (!grid) return; // បើរកមិនឃើញកន្លែងបង្ហាញ ឈប់ធ្វើការ
+  if (!grid) return;
 
-  // បើអត់មានទិន្នន័យ បង្ហាញសារប្រាប់
   if (items.length === 0) {
     grid.innerHTML = `<p style="text-align:center; width:100%; padding:20px;">មិនមានផលិតផលដែលអ្នកស្វែងរកទេ!</p>`;
     return;
   }
 
-  // បង្កើត HTML សម្រាប់កាតផលិតផលនីមួយៗ
   grid.innerHTML = items
-    .map(
-      (p) => `
+    .map((p) => {
+      // 🔥 ការពារលេខ ១: បើតម្លៃជាអក្សរ បម្លែងទៅជាលេខសិន (parseFloat)
+      let safePrice = parseFloat(p.price);
+      if (isNaN(safePrice)) safePrice = 0; // បើនៅតែមិនមែនលេខ ដាក់ 0
+
+      // 🔥 ការពារលេខ ២: បើឈ្មោះមានសញ្ញា ' ត្រូវការពារកុំឱ្យ Error ពេលចុច
+      let safeName = (p.name || "Unknown Product").replace(/'/g, "\\'");
+
+      // 🔥 ការពារលេខ ៣: បើរូបភាពគ្មាន ដាក់រូបជំនួស
+      let safeImg = p.img || "https://via.placeholder.com/150";
+
+      return `
         <div class="product-card">
-            <img src="${p.img}" alt="${p.name}" onclick="openModal(${p.id})" style="cursor: pointer;" title="ចុចដើម្បីមើលលម្អិត">
+            <img src="${safeImg}" 
+                 alt="${safeName}" 
+                 onclick="openModal(${p.id})" 
+                 style="cursor: pointer;" 
+                 onerror="this.src='https://via.placeholder.com/150'">
+                 
             <div class="product-info">
-                <h3 onclick="openModal(${p.id})" style="cursor: pointer;">${p.name}</h3>
-                <p class="price">$${p.price.toFixed(2)}</p>
+                <h3 onclick="openModal(${p.id})" style="cursor: pointer;">${p.name || "No Name"}</h3>
+                
+                <p class="price">$${safePrice.toFixed(2)}</p>
+                
                 <div class="action-buttons">
-                    <button class="add-to-cart" onclick="addToCart(${p.price}, '${p.name.replace(/'/g, "\\'")}')">
+                    <button class="add-to-cart" onclick="addToCart(${safePrice}, '${safeName}')">
                         <i class="fas fa-shopping-cart"></i> Add
                     </button>
-                    <button class="buy-now" onclick="addToCart(${p.price}, '${p.name.replace(/'/g, "\\'")}', true)">
+                    <button class="buy-now" onclick="addToCart(${safePrice}, '${safeName}', true)">
                         Buy Now
                     </button>
                 </div>
             </div>
         </div>
-    `,
-    )
+        `;
+    })
     .join("");
 }
 

@@ -63,15 +63,16 @@
     </div>
 
     <script>
-      // ✅ ប្រើ Relative Path ដូចគ្នា (សំខាន់បំផុត!)
+      // ✅ ប្រើ Relative Path ដូចគ្នា
       const API_URL = "/api";
 
-      // ចាប់យកទិន្នន័យពី URL (ដែលបាន Scan ពី QR)
+      // ១. ចាប់យកទិន្នន័យពី URL ទាំងអស់
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get("id");
       const amount = params.get("amount");
+      const user = params.get("user") || "Unknown";
+      const items = params.get("items") || "គ្មានទិន្នន័យ";
 
-      // បង្ហាញទិន្នន័យលើអេក្រង់
       if (orderId && amount) {
         document.getElementById("display-id").innerText = orderId;
         document.getElementById("display-amount").innerText = "$" + amount;
@@ -85,11 +86,16 @@
         btn.disabled = true;
 
         try {
-          // ហៅទៅកាន់ Server (Render)
+          // ២. ផ្ញើទិន្នន័យទាំងអស់ (id, លុយ, ឈ្មោះ, អីវ៉ាន់) ទៅ Server
           const res = await fetch(`${API_URL}/pay-confirm`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: orderId }),
+            body: JSON.stringify({
+              orderId: orderId,
+              amount: amount,
+              user: user,
+              items: items,
+            }),
           });
 
           const data = await res.json();

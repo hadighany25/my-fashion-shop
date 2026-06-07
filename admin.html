@@ -71,7 +71,7 @@
         color: white;
         display: none;
         margin-left: 10px;
-      } /* ប៊ូតុង Cancel */
+      }
 
       /* Table Styles */
       table {
@@ -84,6 +84,7 @@
         padding: 15px;
         text-align: left;
         border-bottom: 1px solid #eee;
+        vertical-align: middle;
       }
       th {
         background: #f8f9fa;
@@ -110,6 +111,36 @@
       }
       .btn-delete {
         background: #c0392b;
+      }
+
+      /* 🔥 Stock Control Buttons Styles 🔥 */
+      .stock-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .stock-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 0 5px;
+        transition: color 0.2s;
+      }
+      .stock-btn.minus {
+        color: #e74c3c;
+      }
+      .stock-btn.plus {
+        color: #2ecc71;
+      }
+      .stock-btn:hover {
+        opacity: 0.7;
+      }
+      .stock-value {
+        font-weight: bold;
+        min-width: 20px;
+        text-align: center;
       }
 
       @media (max-width: 768px) {
@@ -177,6 +208,52 @@
             </div>
           </div>
 
+          <div class="form-grid">
+            <div>
+              <label>Stock (ចំនួនក្នុងស្តុក)</label>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <button
+                  type="button"
+                  onclick="adjustStockForm(-1)"
+                  style="
+                    width: 40px;
+                    background: #e74c3c;
+                    padding: 10px;
+                    color: white;
+                    font-weight: bold;
+                    border: none;
+                    border-radius: 5px;
+                  "
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  id="p-stock"
+                  value="0"
+                  min="0"
+                  required
+                  style="margin: 0; text-align: center; font-weight: bold"
+                />
+                <button
+                  type="button"
+                  onclick="adjustStockForm(1)"
+                  style="
+                    width: 40px;
+                    background: #2ecc71;
+                    padding: 10px;
+                    color: white;
+                    font-weight: bold;
+                    border: none;
+                    border-radius: 5px;
+                  "
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div style="display: flex">
             <button type="submit" class="btn-primary" id="btn-submit">
               Add Product
@@ -202,6 +279,7 @@
               <th>Name</th>
               <th>Price</th>
               <th>Category</th>
+              <th>Stock</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -212,6 +290,7 @@
 
     <script>
       const API_URL = "/api";
+      let allProducts = []; // ទុកទិន្នន័យដើម្បីប្រៀបធៀប
 
       // 🔒 ការពារ Admin (Security Check)
       const currentUser = localStorage.getItem("username");
@@ -224,22 +303,50 @@
         window.location.href = "login.html";
       }
 
+      function adjustStockForm(change) {
+        const stockInput = document.getElementById("p-stock");
+        let currentVal = parseInt(stockInput.value) || 0;
+        let newVal = currentVal + change;
+        if (newVal < 0) newVal = 0;
+        stockInput.value = newVal;
+      }
+
       // --- 1. LOAD PRODUCTS ---
       async function loadProducts() {
-        const res = await fetch(`${API_URL}/products`);
-        const products = await res.json();
+        try {
+          const res = await fetch(`${API_URL}/products`);
+          allProducts = await res.json();
+          renderProductTable();
+        } catch (error) {
+          console.error("Failed to load products:", error);
+        }
+      }
+
+      function renderProductTable() {
         const tbody = document.getElementById("product-list");
 
-        tbody.innerHTML = products
-          .map(
-            (p) => `
+        tbody.innerHTML = allProducts
+          .map((p) => {
+            const stockColor = p.stock && p.stock > 0 ? "green" : "red";
+            const stockText = p.stock || 0;
+
+            return `
                 <tr>
                     <td><img src="${p.img}" class="product-img" onerror="this.src='https://via.placeholder.com/50'"></td>
                     <td>${p.name}</td>
                     <td>$${p.price}</td>
                     <td><span style="background:#eee; padding:5px 10px; border-radius:15px; font-size:0.8rem">${p.category}</span></td>
+                    
                     <td>
-                        <button class="action-btn btn-edit" onclick="startEdit('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.category}', '${p.img}')">
+                        <div class="stock-control">
+                            <button type="button" class="stock-btn minus" onclick="updateStock(${p.id}, -1)">-</button>
+                            <span class="stock-value" style="color:${stockColor}">${stockText}</span>
+                            <button type="button" class="stock-btn plus" onclick="updateStock(${p.id}, 1)">+</button>
+                        </div>
+                    </td>
+                    
+                    <td>
+                        <button class="action-btn btn-edit" onclick="startEdit('${p.id}', '${p.name.replace(/'/g, "\\'")}', '${p.price}', '${p.category}', '${p.img}', '${p.stock || 0}')">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="action-btn btn-delete" onclick="deleteProduct('${p.id}')">
@@ -247,14 +354,61 @@
                         </button>
                     </td>
                 </tr>
-            `,
-          )
+            `;
+          })
           .join("");
       }
 
-      loadProducts(); // Run ពេលបើកភ្លាម
+      // --- 🔥 មុខងារ AUTO UPDATE (Real-time Simulation) 🔥 ---
+      async function autoUpdateTable() {
+        try {
+          const res = await fetch(`${API_URL}/products`);
+          const latestProducts = await res.json();
 
-      // --- 2. HANDLE SUBMIT (ADD or EDIT) ---
+          // ឆែកមើលថាតើទិន្នន័យថ្មី និងចាស់ខុសគ្នាឬអត់ (ឧ. មានគេទិញ ឬកាត់ស្តុក)
+          if (JSON.stringify(allProducts) !== JSON.stringify(latestProducts)) {
+            allProducts = latestProducts; // ដាក់ទិន្នន័យថ្មីចូល
+            renderProductTable(); // Update តែតារាង (មិនប៉ះពាល់ការវាយអក្សរក្នុង Form ទេ)
+          }
+        } catch (error) {
+          console.log("Auto-update checking failed...");
+        }
+      }
+
+      // បញ្ជាឱ្យរត់មុខងារ Auto Update រៀងរាល់ ២ វិនាទី ម្តង
+      setInterval(autoUpdateTable, 2000);
+      // ----------------------------------------------------
+
+      async function updateStock(id, change) {
+        const product = allProducts.find((p) => p.id === id);
+        if (!product) return;
+
+        let newStock = (parseInt(product.stock) || 0) + change;
+        if (newStock < 0) newStock = 0;
+
+        try {
+          const res = await fetch(`${API_URL}/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...product,
+              stock: newStock,
+            }),
+          });
+
+          if (res.ok) {
+            product.stock = newStock;
+            renderProductTable();
+          } else {
+            alert("Failed to update stock.");
+          }
+        } catch (error) {
+          console.error("Error updating stock:", error);
+        }
+      }
+
+      loadProducts();
+
       async function handleFormSubmit(e) {
         e.preventDefault();
 
@@ -263,8 +417,8 @@
         const price = document.getElementById("p-price").value;
         const category = document.getElementById("p-category").value;
         const img = document.getElementById("p-img").value;
+        const stock = document.getElementById("p-stock").value;
 
-        // បើមាន ID មានន័យថាកំពុង Edit, បើអត់មានគឺ Add New
         const method = id ? "PUT" : "POST";
         const url = id ? `${API_URL}/products/${id}` : `${API_URL}/products`;
 
@@ -272,13 +426,19 @@
           const res = await fetch(url, {
             method: method,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, price, category, img }),
+            body: JSON.stringify({
+              name,
+              price,
+              category,
+              img,
+              stock: parseInt(stock),
+            }),
           });
 
           if (res.ok) {
             alert(id ? "Updated successfully!" : "Added successfully!");
-            resetForm(); // លុប Form ចោល
-            loadProducts(); // Load ទិន្នន័យថ្មី
+            resetForm();
+            loadProducts();
           } else {
             alert("Something went wrong!");
           }
@@ -287,29 +447,25 @@
         }
       }
 
-      // --- 3. START EDIT MODE ---
-      function startEdit(id, name, price, category, img) {
-        // បញ្ចូលទិន្នន័យចាស់ទៅក្នុង Form
+      function startEdit(id, name, price, category, img, stock) {
         document.getElementById("edit-id").value = id;
         document.getElementById("p-name").value = name;
         document.getElementById("p-price").value = price;
         document.getElementById("p-category").value = category;
         document.getElementById("p-img").value = img;
+        document.getElementById("p-stock").value = stock;
 
-        // ប្តូរអក្សរប៊ូតុង
         document.getElementById("form-title").innerText = "Edit Product";
         document.getElementById("btn-submit").innerText = "Update Product";
         document.getElementById("btn-submit").style.background = "#f39c12";
-        document.getElementById("btn-cancel").style.display = "block"; // បង្ហាញប៊ូតុង Cancel
+        document.getElementById("btn-cancel").style.display = "block";
 
-        // រំកិលទៅមើល Form ខាងលើ
         window.scrollTo(0, 0);
       }
 
-      // --- 4. RESET FORM (CANCEL) ---
       function resetForm() {
         document.querySelector("form").reset();
-        document.getElementById("edit-id").value = ""; // លុប ID ចោល
+        document.getElementById("edit-id").value = "";
 
         document.getElementById("form-title").innerText = "Add New Product";
         document.getElementById("btn-submit").innerText = "Add Product";
@@ -317,7 +473,6 @@
         document.getElementById("btn-cancel").style.display = "none";
       }
 
-      // --- 5. DELETE PRODUCT ---
       async function deleteProduct(id) {
         if (!confirm("Are you sure you want to delete this product?")) return;
 

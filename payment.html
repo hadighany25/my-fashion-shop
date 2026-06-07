@@ -9,6 +9,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .checkout-container {
         max-width: 900px;
@@ -22,17 +23,40 @@
         gap: 40px;
       }
 
-      /* ផ្នែក QR Code */
       .payment-section {
         text-align: center;
         border-right: 1px solid #eee;
         padding-right: 40px;
       }
+
+      /* 🔥 Tab Style 🔥 */
+      .payment-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        justify-content: center;
+      }
+      .tab-btn {
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        background: #f8f9fa;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+        flex: 1;
+      }
+      .tab-btn.active {
+        background: #2c3e50;
+        color: white;
+        border-color: #2c3e50;
+      }
+
       .qr-box {
         background: #f8f9fa;
         padding: 20px;
         border-radius: 10px;
-        margin: 20px 0;
+        margin: 10px 0;
         display: inline-block;
         border: 2px dashed #d35400;
       }
@@ -42,14 +66,36 @@
         display: block;
       }
 
-      /* ផ្នែក Order Summary */
+      /* 🔥 Credit Card Form Style 🔥 */
+      #card-form {
+        text-align: left;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #eee;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+
       .order-summary h3 {
         border-bottom: 2px solid #2c3e50;
         padding-bottom: 10px;
         margin-bottom: 20px;
       }
-
-      /* 🔥 Style សម្រាប់បញ្ជីទំនិញថ្មី 🔥 */
       .order-item {
         display: flex;
         justify-content: space-between;
@@ -70,7 +116,6 @@
         color: #777;
         font-size: 0.9rem;
       }
-
       .item-controls {
         display: flex;
         align-items: center;
@@ -84,11 +129,6 @@
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
-        color: #333;
-        transition: 0.2s;
-      }
-      .qty-btn:hover {
-        background: #ddd;
       }
       .remove-btn {
         background: #ffcccc;
@@ -99,11 +139,6 @@
         border-radius: 5px;
         cursor: pointer;
       }
-      .remove-btn:hover {
-        background: #ffaaaa;
-      }
-
-      /* តម្លៃសរុប */
       .total-price {
         font-size: 1.5rem;
         font-weight: bold;
@@ -114,7 +149,6 @@
         display: flex;
         justify-content: space-between;
       }
-
       .status-badge {
         margin-top: 10px;
         padding: 8px 15px;
@@ -124,21 +158,10 @@
         font-weight: bold;
         display: inline-block;
       }
-      .btn-simulate {
-        margin-top: 20px;
-        background: #2c3e50;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 5px;
-        display: inline-block;
-        font-size: 0.9rem;
-      }
 
       @media (max-width: 768px) {
         .checkout-container {
           grid-template-columns: 1fr;
-          border-right: none;
         }
         .payment-section {
           border-right: none;
@@ -159,33 +182,102 @@
 
     <div class="checkout-container">
       <div class="payment-section">
-        <h2><i class="fas fa-qrcode"></i> Scan to Pay</h2>
-        <p>Scan to pay via mobile banking</p>
+        <h2><i class="fas fa-wallet"></i> Payment Method</h2>
 
-        <div class="qr-box" id="qr-container">
-          <img id="qr-img" src="" alt="Generating QR..." />
+        <div class="payment-tabs">
+          <button class="tab-btn active" onclick="switchTab('qr')">
+            <i class="fas fa-qrcode"></i> QR Scan
+          </button>
+          <button class="tab-btn" onclick="switchTab('card')">
+            <i class="fas fa-credit-card"></i> Credit Card
+          </button>
         </div>
 
-        <div id="payment-status">
+        <div id="qr-section">
+          <div class="qr-box" id="qr-container">
+            <img id="qr-img" src="" alt="Generating QR..." />
+          </div>
+          <a
+            id="btn-deeplink"
+            href="#"
+            style="
+              display: block;
+              background: #00aee0;
+              color: white;
+              padding: 15px;
+              text-decoration: none;
+              border-radius: 10px;
+              font-weight: bold;
+              margin-top: 15px;
+            "
+          >
+            <i class="fas fa-mobile-alt"></i> PAY WITH U-PAY APP
+          </a>
+        </div>
+
+        <div id="card-section" style="display: none">
+          <div id="card-form">
+            <div class="form-group">
+              <label>Card Number</label>
+              <input
+                type="text"
+                id="card-num"
+                placeholder="1234 5678 9012 3456"
+                maxlength="19"
+              />
+            </div>
+            <div style="display: flex; gap: 10px">
+              <div class="form-group" style="flex: 2">
+                <label>Expiry Date</label>
+                <input
+                  type="text"
+                  id="card-exp"
+                  placeholder="MM/YY"
+                  maxlength="5"
+                />
+              </div>
+              <div class="form-group" style="flex: 1">
+                <label>CVV</label>
+                <input
+                  type="password"
+                  id="card-cvv"
+                  placeholder="***"
+                  maxlength="3"
+                />
+              </div>
+            </div>
+            <button
+              onclick="processCardPayment()"
+              style="
+                width: 100%;
+                background: #004d40;
+                color: white;
+                padding: 15px;
+                border: none;
+                border-radius: 10px;
+                font-weight: bold;
+                cursor: pointer;
+              "
+            >
+              CONFIRM PAYMENT
+            </button>
+          </div>
+        </div>
+
+        <div id="payment-status" style="margin-top: 20px">
           <span class="status-badge"
             ><i class="fas fa-spinner fa-spin"></i> Waiting for payment...</span
           >
         </div>
-
-        <a id="mobile-link" href="#" target="_blank" class="btn-simulate">
-          <i class="fas fa-mobile-alt"></i> Open Mobile Simulator
-        </a>
       </div>
 
       <div class="order-summary">
         <h3>Your Order</h3>
         <div id="order-items"></div>
-
         <div class="total-price">
           <span>Total:</span>
           <span id="total-amount">$0.00</span>
         </div>
-
         <div style="margin-top: 20px; font-size: 0.9rem; color: #777">
           <p>Order ID: <span id="display-order-id">...</span></p>
         </div>
@@ -193,28 +285,85 @@
     </div>
 
     <script>
-      // ✅ API URL
       const API_URL = "/api";
 
       let currentOrderId = "";
       let currentTotal = 0;
       let pollingInterval;
+      let dbProducts = [];
 
-      window.onload = function () {
+      window.onload = async function () {
         currentOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
         document.getElementById("display-order-id").innerText = currentOrderId;
+        localStorage.setItem("pendingOrder", currentOrderId);
 
+        try {
+          const res = await fetch(`${API_URL}/products`);
+          dbProducts = await res.json();
+        } catch (error) {
+          console.error("Error loading products:", error);
+        }
+        // ធ្វើឱ្យលេខកាតដកឃ្លារាល់ ៤ ខ្ទង់
+        document
+          .getElementById("card-num")
+          .addEventListener("input", function (e) {
+            e.target.value = e.target.value
+              .replace(/[^\d]/g, "")
+              .replace(/(.{4})/g, "$1 ")
+              .trim();
+          });
+
+        // ធ្វើឱ្យ Expiry Date ថែមសញ្ញា / ស្វ័យប្រវត្តិ
+        document
+          .getElementById("card-exp")
+          .addEventListener("input", function (e) {
+            e.target.value = e.target.value
+              .replace(/[^\d]/g, "")
+              .replace(/(.{2})/, "$1/")
+              .trim();
+          });
         renderOrderList();
         startPolling();
       };
 
-      // 🔥 មុខងារបង្ហាញបញ្ជីទំនិញ (កែសម្រួលប្រើ Index) 🔥
+      function switchTab(type) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((b) => b.classList.remove("active"));
+        event.currentTarget.classList.add("active");
+        if (type === "qr") {
+          document.getElementById("qr-section").style.display = "block";
+          document.getElementById("card-section").style.display = "none";
+        } else {
+          document.getElementById("qr-section").style.display = "none";
+          document.getElementById("card-section").style.display = "block";
+        }
+      }
+
+      async function registerOrderToServer() {
+        const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+        const user = localStorage.getItem("username") || "អតិថិជនទូទៅ";
+        const itemsString = cart
+          .map((item, index) => `   ${index + 1}. ${item.name} (x${item.qty})`)
+          .join("\n");
+
+        await fetch(`${API_URL}/create-order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: currentOrderId,
+            cart: cart,
+            user: user,
+            itemsString: itemsString,
+            amount: currentTotal.toFixed(2),
+          }),
+        });
+      }
+
       function renderOrderList() {
         const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
         const itemsContainer = document.getElementById("order-items");
-
         if (cart.length === 0) {
-          alert("Cart is empty! Redirecting...");
           window.location.href = "index.html";
           return;
         }
@@ -226,103 +375,208 @@
         document.getElementById("total-amount").innerText =
           "$" + currentTotal.toFixed(2);
 
-        // 👉 កែត្រង់នេះ៖ ថែម index ក្នុង map ដើម្បីសម្គាល់ទីតាំង
         itemsContainer.innerHTML = cart
           .map(
             (item, index) => `
-                <div class="order-item">
-                    <div class="item-info">
-                        <span class="item-name">${item.name}</span>
-                        <span class="item-price">$${item.price} x ${item.qty}</span>
-                    </div>
-                    <div class="item-controls">
-                        <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                        
-                        <span style="font-weight:bold; min-width:20px; text-align:center;">${item.qty}</span>
-                        
-                        <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                        
-                        <button class="remove-btn" onclick="removeItem(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
+            <div class="order-item">
+                <div class="item-info">
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-price">$${item.price} x ${item.qty}</span>
                 </div>
-            `,
+                <div class="item-controls">
+                    <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                    <span style="font-weight:bold; min-width:20px; text-align:center;">${item.qty}</span>
+                    <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                    <button class="remove-btn" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`,
           )
           .join("");
 
         generateQRCode();
+        registerOrderToServer();
       }
 
-      // 🔥 មុខងារកែចំនួន (កែប្រើ Index) 🔥
       function updateQty(index, change) {
         let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
-
-        // ចាប់យកតាមលេខរៀង (ធានាថាចំតួ ១០០%)
         if (cart[index]) {
-          cart[index].qty += change;
-
-          // បើដកដល់ 0 គឺលុបចោល (ដោយប្រើ splice តាម index)
-          if (cart[index].qty <= 0) {
-            cart.splice(index, 1);
+          if (change > 0 && dbProducts.length > 0) {
+            const product = dbProducts.find((p) => p.name === cart[index].name);
+            if (cart[index].qty + change > (product?.stock || 0)) {
+              alert("Out of stock!");
+              return;
+            }
           }
+          cart[index].qty += change;
+          if (cart[index].qty <= 0) cart.splice(index, 1);
         }
-
         localStorage.setItem("shoppingCart", JSON.stringify(cart));
         renderOrderList();
       }
 
-      // 🔥 មុខងារលុបចោល (កែប្រើ Index) 🔥
       function removeItem(index) {
-        if (!confirm("Are you sure you want to remove this item?")) return;
-
         let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
-
-        // លុបតាមលេខរៀង
         cart.splice(index, 1);
-
         localStorage.setItem("shoppingCart", JSON.stringify(cart));
         renderOrderList();
       }
 
       function generateQRCode() {
-        const currentDomain = window.location.origin;
-        const paymentData = `${currentDomain}/mobile-pay.html?id=${currentOrderId}&amount=${currentTotal.toFixed(2)}`;
-        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentData)}`;
-
-        document.getElementById("qr-img").src = qrApi;
-        document.getElementById("mobile-link").href = paymentData;
+        const currentIP = window.location.hostname;
+        const user = localStorage.getItem("username") || "អតិថិជនទូទៅ";
+        const itemsString = (
+          JSON.parse(localStorage.getItem("shoppingCart")) || []
+        )
+          .map((item, i) => `${i + 1}.${item.name}(x${item.qty})`)
+          .join("\n");
+        const callbackUrl = `${window.location.origin}/api/pay-confirm`;
+        const paymentParams = `?acc=100000004&amount=${currentTotal.toFixed(2)}&source=qr&lockAmount=true&orderId=${currentOrderId}&user=${encodeURIComponent(user)}&items=${encodeURIComponent(itemsString)}&callback=${encodeURIComponent(callbackUrl)}`;
+        const transferUrl =
+          `http://${currentIP}:3000/transfer.html` + paymentParams;
+        document.getElementById("qr-img").src =
+          `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(transferUrl)}`;
+        document.getElementById("btn-deeplink").href = transferUrl;
       }
 
       async function startPolling() {
         if (pollingInterval) clearInterval(pollingInterval);
-
         pollingInterval = setInterval(async () => {
           try {
             const res = await fetch(
               `${API_URL}/check-status/${currentOrderId}`,
             );
             const data = await res.json();
-
             if (data.status === "SUCCESS") {
               clearInterval(pollingInterval);
-              document.getElementById("qr-container").innerHTML = `
-                            <div style="color: green; font-size: 1.5rem; font-weight: bold; padding: 50px 0;">
-                                <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 10px;"></i><br>
-                                Payment Successful!
-                            </div>
-                        `;
               document.getElementById("payment-status").innerHTML =
                 `<span class="status-badge" style="background:#d4edda; color:#155724;">Paid Successfully</span>`;
-              localStorage.removeItem("shoppingCart");
+              localStorage.setItem("shoppingCart", "[]");
+              localStorage.removeItem("pendingOrder");
               setTimeout(() => {
                 window.location.href = "index.html";
-              }, 3000);
+              }, 2000);
             }
-          } catch (error) {
-            console.error("Polling error:", error);
-          }
+          } catch (e) {}
         }, 2000);
+      }
+
+      // ==========================================
+      // 🔥 មុខងារទូទាត់តាមកាត (CREDIT CARD PAYMENT)
+      // ==========================================
+
+      // កែសម្រួលផ្នែកខ្លះដើម្បីស្រួលឆែក (Full Code)
+      async function processCardPayment() {
+        const cardNum = document
+          .getElementById("card-num")
+          .value.replace(/\s/g, "");
+        const cardExp = document.getElementById("card-exp").value;
+        const cardCvv = document.getElementById("card-cvv").value;
+
+        if (cardNum.length < 16 || cardExp.length < 5 || cardCvv.length < 3) {
+          return Swal.fire(
+            "Warning",
+            "សូមបំពេញព័ត៌មានកាតឱ្យបានត្រឹមត្រូវ!",
+            "warning",
+          );
+        }
+
+        Swal.fire({
+          title: "Processing...",
+          text: "កំពុងផ្ញើសំណើទៅកាន់ U-Pay App...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          console.log("Sending request to Backend..."); // សម្រាប់ Check
+          const res = await fetch(
+            "http://localhost:3000/api/card/request-payment",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                cardNumber: cardNum,
+                expiry: cardExp,
+                cvv: cardCvv,
+                amount: currentTotal.toFixed(2),
+                orderId: currentOrderId,
+                shopName: "Fashion Shop",
+                // ប្រហែលជាត្រូវការ phone: "012345678" បន្ថែមដើម្បីឱ្យ App លោត
+              }),
+            },
+          );
+
+          const data = await res.json();
+          console.log("Backend Response:", data); // មើល Response នៅទីនេះ
+
+          if (data.success) {
+            Swal.fire({
+              icon: "info",
+              title: "Awaiting Approval",
+              text: "សូមចូលទៅកាន់ U-Pay App របស់អ្នក ដើម្បីបញ្ជាក់ (Confirm) ការបង់ប្រាក់នេះ!",
+              allowOutsideClick: false,
+              showConfirmButton: false,
+            });
+            checkCardPaymentStatus(data.paymentId);
+          } else {
+            Swal.fire("Error", data.message || "ប្រតិបត្តិការបរាជ័យ", "error");
+          }
+        } catch (error) {
+          console.error("Fetch Error:", error);
+          Swal.fire("Error", "មិនអាចភ្ជាប់ទៅកាន់ U-Pay Server បានទេ!", "error");
+        }
+      }
+
+      function checkCardPaymentStatus(paymentId) {
+        const cardInterval = setInterval(async () => {
+          try {
+            const res = await fetch(
+              `http://localhost:3000/api/card/check-status/${paymentId}`,
+            );
+            const data = await res.json();
+
+            if (data.status === "success") {
+              clearInterval(cardInterval);
+
+              // 🔥 ប្រាប់ Server របស់ Fashion Shop ឱ្យ Update Order ទៅជា SUCCESS
+              await fetch(`${API_URL}/pay-confirm`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  orderId: currentOrderId,
+                  amount: currentTotal.toFixed(2),
+                  user: localStorage.getItem("username") || "Card User",
+                  status: "SUCCESS",
+                }),
+              });
+
+              Swal.fire({
+                icon: "success",
+                title: "Payment Successful!",
+                text: "ការទូទាត់តាមកាតត្រូវបានសម្រេច។ សូមអរគុណ!",
+                timer: 3000,
+              }).then(() => {
+                localStorage.setItem("shoppingCart", "[]");
+                window.location.href = "index.html";
+              });
+            }
+            // 🔥 ថែមថ្មី៖ ពេលភ្ញៀវចុចបដិសេធ
+            else if (data.status === "declined") {
+              clearInterval(cardInterval); // បញ្ឈប់ការរង់ចាំ
+              Swal.fire({
+                icon: "error",
+                title: "Payment Declined ❌",
+                text: "អតិថិជនបានបដិសេធការទូទាត់ប្រាក់នេះ!",
+                confirmButtonColor: "#ef4444",
+              });
+            } else if (data.status === "expired") {
+              clearInterval(cardInterval);
+              Swal.fire("Expired", "សំណើបង់ប្រាក់បានផុតកំណត់!", "error");
+            }
+          } catch (e) {
+            console.log("Polling error...");
+          }
+        }, 3000);
       }
     </script>
   </body>

@@ -429,10 +429,10 @@
         )
           .map((item, i) => `${i + 1}.${item.name}(x${item.qty})`)
           .join("\n");
-        const callbackUrl = `${window.location.origin}/api/pay-confirm`;
+        const callbackUrl = `https://fashion-shop.onrender.com/api/pay-confirm`; // ជំនួសដោយលីង Fashion Shop របស់ប្អូន
         const paymentParams = `?acc=100000004&amount=${currentTotal.toFixed(2)}&source=qr&lockAmount=true&orderId=${currentOrderId}&user=${encodeURIComponent(user)}&items=${encodeURIComponent(itemsString)}&callback=${encodeURIComponent(callbackUrl)}`;
         const transferUrl =
-          `http://${currentIP}:3000/transfer.html` + paymentParams;
+          `https://u-pay-bank.onrender.com/transfer.html` + paymentParams;
         document.getElementById("qr-img").src =
           `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(transferUrl)}`;
         document.getElementById("btn-deeplink").href = transferUrl;
@@ -490,7 +490,7 @@
         try {
           console.log("Sending request to Backend..."); // សម្រាប់ Check
           const res = await fetch(
-            "http://localhost:3000/api/card/request-payment",
+            "https://u-pay-bank.onrender.com/api/card/request-payment",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -531,7 +531,7 @@
         const cardInterval = setInterval(async () => {
           try {
             const res = await fetch(
-              `http://localhost:3000/api/card/check-status/${paymentId}`,
+              `https://u-pay-bank.onrender.com/api/card/check-status/${paymentId}`,
             );
             const data = await res.json();
 

@@ -364,7 +364,8 @@
         const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
         const itemsContainer = document.getElementById("order-items");
         if (cart.length === 0) {
-          window.location.href = "index.html";
+          window.location.href = "/fashion-shop/index.html";
+          // ឬអាស្រ័យលើ Folder ដែលប្អូនដាក់កូដ Fashion Shop ក្នុង public/
           return;
         }
 
@@ -453,7 +454,7 @@
               localStorage.setItem("shoppingCart", "[]");
               localStorage.removeItem("pendingOrder");
               setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "/fashion-shop/index.html";
               }, 2000);
             }
           } catch (e) {}
@@ -557,7 +558,7 @@
                 timer: 3000,
               }).then(() => {
                 localStorage.setItem("shoppingCart", "[]");
-                window.location.href = "index.html";
+                window.location.href = "/fashion-shop/index.html";
               });
             }
             // 🔥 ថែមថ្មី៖ ពេលភ្ញៀវចុចបដិសេធ

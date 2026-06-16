@@ -369,7 +369,7 @@
         const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
         const itemsContainer = document.getElementById("order-items");
         if (cart.length === 0) {
-          window.location.href = "/fashion-shop/index.html";
+          window.location.href = "index.html";
           return;
         }
 
@@ -516,7 +516,7 @@
               }).then(() => {
                 localStorage.setItem("shoppingCart", "[]");
                 localStorage.removeItem("pendingOrder");
-                window.location.href = "/fashion-shop/index.html";
+                window.location.href = "index.html"; // លុប /fashion-shop/ ចេញ
               });
             } else {
               initialTrxCount = shopAcc.transactions.length;
@@ -617,7 +617,7 @@
                 timer: 3000,
               }).then(() => {
                 localStorage.setItem("shoppingCart", "[]");
-                window.location.href = "/fashion-shop/index.html";
+                window.location.href = "index.html"; // លុប /fashion-shop/ ចេញ
               });
             } else if (data.status === "declined") {
               clearInterval(cardInterval);

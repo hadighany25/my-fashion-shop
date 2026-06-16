@@ -285,34 +285,25 @@
     </div>
 
     <script>
-      // 🔥 ដាក់ Host ពិតប្រាកដរបស់ Fashion Shop
+      // 🔥 ដូរទៅប្រើ API Link ពិតប្រាកដដែលនៅ Live ស្រាប់
       const API_URL = "https://my-fashion-shop-t7vc.onrender.com/api";
-
-      // 🔥 បន្ថែម API របស់ U-Pay ដើម្បីឆែកលុយអូតូ
-      const UPAY_API_URL = "https://u-pay-bank.onrender.com/api/users";
-      const SHOP_ACCOUNT = "100000004";
 
       let currentOrderId = "";
       let currentTotal = 0;
       let pollingInterval;
       let dbProducts = [];
-      let initialTrxCount = 0; // កត់ត្រាចំនួន Transaction ដើម
 
       window.onload = async function () {
         currentOrderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
         document.getElementById("display-order-id").innerText = currentOrderId;
         localStorage.setItem("pendingOrder", currentOrderId);
 
-        // ទាញទិន្នន័យទំនិញពី Server
         try {
           const res = await fetch(`${API_URL}/products`);
           dbProducts = await res.json();
         } catch (error) {
           console.error("Error loading products:", error);
         }
-
-        // ហៅមុខងារចាប់ Transaction ចាស់ពី U-Pay
-        await initUPayListener();
 
         // ធ្វើឱ្យលេខកាតដកឃ្លារាល់ ៤ ខ្ទង់
         document
@@ -335,7 +326,7 @@
           });
 
         renderOrderList();
-        startPolling(); // ចាប់ផ្តើមឆែកលុយចូល
+        startPolling();
       };
 
       function switchTab(type) {
@@ -376,7 +367,7 @@
         const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
         const itemsContainer = document.getElementById("order-items");
         if (cart.length === 0) {
-          window.location.href = "index.html";
+          window.location.href = "/fashion-shop/index.html";
           return;
         }
 
@@ -433,7 +424,7 @@
         renderOrderList();
       }
 
-      // 🔥 កន្លែងកំណត់ QR Code ខ្លី (លេខកុង:លុយ:លេខកុម្ម៉ង់)
+      // 🔥 កន្លែងដែលបានកែសម្រួលដើម្បីឱ្យចេញ QR ខ្លី (លេខកុង:លុយ:លេខកុម្ម៉ង់) 🔥
       function generateQRCode() {
         const user = localStorage.getItem("username") || "អតិថិជនទូទៅ";
         const itemsString = (
@@ -443,120 +434,51 @@
           .join("\n");
         const callbackUrl = `${API_URL}/pay-confirm`;
 
+        const account = "100000004"; // Fashion Shop Account
         const amount = currentTotal.toFixed(2);
 
         // 1. បង្កើត QR Data ខ្លី ដើម្បីឱ្យកាមេរ៉ាស្រួល Scan អានបានលឿន
-        const shortQrData = `${SHOP_ACCOUNT}:${amount}:${currentOrderId}`;
+        const shortQrData = `${account}:${amount}:${currentOrderId}`;
 
         // 2. បង្កើត URL វែង សម្រាប់ប៊ូតុង "PAY WITH U-PAY APP" ដើម្បីចុច Deep Link ហោះចូល App ផ្ទាល់ (ទូរស័ព្ទដៃ)
-        const paymentParams = `?acc=${SHOP_ACCOUNT}&amount=${amount}&source=qr&lockAmount=true&orderId=${currentOrderId}&user=${encodeURIComponent(user)}&items=${encodeURIComponent(itemsString)}&callback=${encodeURIComponent(callbackUrl)}`;
+        const paymentParams = `?acc=${account}&amount=${amount}&source=qr&lockAmount=true&orderId=${currentOrderId}&user=${encodeURIComponent(user)}&items=${encodeURIComponent(itemsString)}&callback=${encodeURIComponent(callbackUrl)}`;
         const transferUrl =
           `https://u-pay-bank.onrender.com/transfer.html` + paymentParams;
 
-        // ដាក់ QR ខ្លីចូលទៅក្នុងរូបភាព
+        // ដាក់ QR ខ្លីចូលទៅក្នុងរូបភាព (Image)
         document.getElementById("qr-img").src =
-          `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shortQrData)}`;
+          `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shortQrData)}&color=d35400`;
 
-        // ដាក់ URL វែងទៅឱ្យប៊ូតុងខាងក្រោម
+        // ដាក់ URL វែងទៅឱ្យប៊ូតុង (Link)
         document.getElementById("btn-deeplink").href = transferUrl;
       }
 
-      // ==========================================
-      // 🔥 មុខងារទាញ Transaction ដើមពី U-Pay
-      // ==========================================
-      async function initUPayListener() {
-        try {
-          const res = await fetch(UPAY_API_URL);
-          const users = await res.json();
-          const shopAcc = users.find(
-            (u) =>
-              u.accountNumber === SHOP_ACCOUNT || u.username === "Fashion Shop",
-          );
-          if (shopAcc && shopAcc.transactions) {
-            initialTrxCount = shopAcc.transactions.length;
-          }
-        } catch (e) {
-          console.log("UPay Init Error:", e);
-        }
-      }
-
-      // ==========================================
-      // 🔥 មុខងារឆែកមើលលុយចូលអូតូ (Polling)
-      // ==========================================
-      async function checkUPayIncoming() {
-        try {
-          const res = await fetch(UPAY_API_URL);
-          const users = await res.json();
-          const shopAcc = users.find(
-            (u) =>
-              u.accountNumber === SHOP_ACCOUNT || u.username === "Fashion Shop",
-          );
-
-          if (shopAcc && shopAcc.transactions) {
-            // ប្រសិនបើមានអ្នកបាញ់លុយចូលថ្មី
-            if (shopAcc.transactions.length > initialTrxCount) {
-              const latestTrx = shopAcc.transactions[0];
-              if (latestTrx.amount > 0) {
-                initialTrxCount = shopAcc.transactions.length; // កត់ត្រា Count ថ្មី
-
-                // 🔥 ប្រាប់ Backend របស់ Fashion Shop ថាមានគេបង់លុយហើយ!
-                await fetch(`${API_URL}/pay-confirm`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    orderId: currentOrderId,
-                    amount: currentTotal.toFixed(2),
-                    user: localStorage.getItem("username") || "QR User",
-                    status: "SUCCESS",
-                  }),
-                });
-              } else {
-                initialTrxCount = shopAcc.transactions.length; // បើជាលុយចេញ (ដកលុយ) គ្រាន់តែ Update Count ទុក
-              }
-            }
-          }
-        } catch (e) {
-          console.log("UPay Check Error:", e);
-        }
-      }
-
-      // ==========================================
-      // 🔥 មេបញ្ជាការ Polling (រត់រាល់ 3 វិនាទី)
-      // ==========================================
       async function startPolling() {
         if (pollingInterval) clearInterval(pollingInterval);
-
         pollingInterval = setInterval(async () => {
-          // ១. ឆែកមើលប្រព័ន្ធ U-Pay (ក្រែងលោគេស្កេន QR ខ្លី)
-          await checkUPayIncoming();
-
-          // ២. ឆែកមើល Backend របស់ Fashion Shop (ក្រែងលោវាបានអាប់ដេតរួចរាល់)
           try {
             const res = await fetch(
               `${API_URL}/check-status/${currentOrderId}`,
             );
             const data = await res.json();
-
-            // វាទាល់តែ Backend លោត SUCCESS ពិតប្រាកដមែន ទើបវាបង្ហាញថាជោគជ័យ
             if (data.status === "SUCCESS") {
               clearInterval(pollingInterval);
               document.getElementById("payment-status").innerHTML =
-                `<span class="status-badge" style="background:#d4edda; color:#155724;">✅ Paid Successfully</span>`;
+                `<span class="status-badge" style="background:#d4edda; color:#155724;">Paid Successfully</span>`;
               localStorage.setItem("shoppingCart", "[]");
               localStorage.removeItem("pendingOrder");
-
-              // ត្រឡប់ទៅទំព័រដើមវិញក្រោយ 2 វិនាទី
               setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "/fashion-shop/index.html";
               }, 2000);
             }
           } catch (e) {}
-        }, 3000); // ឆែករៀងរាល់ ៣ វិនាទី
+        }, 2000);
       }
 
       // ==========================================
       // 🔥 មុខងារទូទាត់តាមកាត (CREDIT CARD PAYMENT)
       // ==========================================
+
       async function processCardPayment() {
         const cardNum = document
           .getElementById("card-num")
@@ -580,6 +502,7 @@
         });
 
         try {
+          console.log("Sending request to Backend...");
           const res = await fetch(
             "https://u-pay-bank.onrender.com/api/card/request-payment",
             {
@@ -597,6 +520,7 @@
           );
 
           const data = await res.json();
+          console.log("Backend Response:", data);
 
           if (data.success) {
             Swal.fire({
@@ -645,7 +569,7 @@
                 timer: 3000,
               }).then(() => {
                 localStorage.setItem("shoppingCart", "[]");
-                window.location.href = "index.html";
+                window.location.href = "/fashion-shop/index.html";
               });
             } else if (data.status === "declined") {
               clearInterval(cardInterval);
